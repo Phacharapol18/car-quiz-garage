@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="ASE-style practice for the A1–A8 automobile certification tests: practice with explanations, timed exams, and weak-spot drills.">
+  <meta name="theme-color" content="#2b2f36">
+  <title>ASE Prep Garage</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="fonts/fonts.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="ase.css">
+</head>
+<body class="ase">
+  <div class="backdrop" aria-hidden="true"></div>
+
+  <!-- ============ GARAGE (home) ============ -->
+  <main id="screen-home" class="screen">
+    <nav class="topnav"><a class="link-back" href="index.html">← Car Quiz Grand Prix</a></nav>
+
+    <header class="brand">
+      <p class="brand__eyebrow">Certification Series</p>
+      <h1 class="brand__title">ASE Prep <span>Garage</span></h1>
+      <p class="brand__tag">Practice every content area of the automobile tests, A1–A9 and G1. Pass a full-length exam to earn its patch. Patches A1–A8 make you a Master Technician.</p>
+    </header>
+
+    <section class="panel path" aria-labelledby="path-title">
+      <div class="path__head">
+        <div>
+          <div class="path__title"><h2 id="path-title">Your path</h2><button class="pro-chip" id="pro-status" type="button"></button></div>
+          <p class="path__rank" id="rank"></p>
+        </div>
+        <p class="path__count"><span id="patch-count">0</span><small>/8 patches</small></p>
+      </div>
+      <div class="path__bar" aria-hidden="true"><div id="path-fill"></div></div>
+    </section>
+
+    <section aria-labelledby="areas-title">
+      <h2 class="section-title" id="areas-title">Choose a test</h2>
+      <div class="areas" id="areas" role="list"></div>
+    </section>
+
+    <section class="panel modes" id="modes" aria-labelledby="modes-title">
+      <h2 id="modes-title"><span id="sel-code"></span> <span id="sel-name"></span></h2>
+      <div class="modes__grid">
+        <button class="mode" id="mode-practice" type="button">
+          <span class="mode__name">Practice</span>
+          <span class="mode__desc" id="desc-practice"></span>
+        </button>
+        <button class="mode" id="mode-exam" type="button">
+          <span class="mode__name">Exam</span>
+          <span class="mode__desc" id="desc-exam"></span>
+        </button>
+        <button class="mode" id="mode-weak" type="button">
+          <span class="mode__name">Weak spots</span>
+          <span class="mode__desc" id="desc-weak"></span>
+        </button>
+      </div>
+      <div class="subs">
+        <div class="subs__head">
+          <h3>Content areas</h3>
+          <p>Exams are weighted like the official test. Drill any area on its own.</p>
+        </div>
+        <ol class="subs__list" id="subs"></ol>
+      </div>
+    </section>
+
+    <section class="panel mock" aria-labelledby="mock-title">
+      <div>
+        <h2 id="mock-title">Master mock exam</h2>
+        <p id="desc-mock"></p>
+      </div>
+      <button class="btn btn--go" id="mode-mock" type="button">Start mock</button>
+    </section>
+
+    <footer class="disclaimer">
+      <p>Unofficial practice questions written for study, organized by the content areas in ASE's published test specifications. Not affiliated with or endorsed by the National Institute for Automotive Service Excellence (ASE). The 70% target is a study benchmark, not the official passing score.</p>
+      <button class="link" id="reset" type="button">Reset my progress</button>
+      <p class="credits"><a href="privacy.html">Privacy</a> · <a href="privacy.html#credits">Credits</a></p>
+    </footer>
+  </main>
+
+  <!-- ============ QUESTION ============ -->
+  <main id="screen-quiz" class="screen" hidden>
+    <div class="qbar">
+      <span class="tag" id="q-area"></span>
+      <span class="qbar__mode" id="q-mode"></span>
+      <span class="qbar__count" id="q-count"></span>
+      <span class="qbar__clock" id="q-clock" hidden></span>
+      <button class="icon-btn" id="q-quit" type="button" aria-label="Leave session" title="Leave (Esc)">✕</button>
+    </div>
+    <div class="progress" aria-hidden="true"><div id="q-progress"></div></div>
+
+    <section class="panel qcard">
+      <p class="qcard__sub" id="q-sub"></p>
+      <p class="qcard__stem" id="q-stem"></p>
+      <div class="techs" id="q-techs" hidden>
+        <blockquote class="tech"><span class="tech__who">Technician A says</span><p id="q-ta"></p></blockquote>
+        <blockquote class="tech"><span class="tech__who">Technician B says</span><p id="q-tb"></p></blockquote>
+        <p class="techs__ask">Who is correct?</p>
+      </div>
+
+      <div class="choices" id="q-choices" role="radiogroup" aria-label="Answer choices"></div>
+
+      <div class="explain" id="q-explain" hidden>
+        <p class="explain__verdict" id="q-verdict"></p>
+        <p class="explain__why" id="q-why"></p>
+        <button class="btn btn--go" id="q-next" type="button"><span>Next question</span> <kbd>Enter</kbd></button>
+      </div>
+
+      <div class="examnav" id="q-examnav" hidden>
+        <button class="btn btn--ghost" id="q-flag" type="button" aria-pressed="false"><span>⚑ Flag</span> <kbd>F</kbd></button>
+        <div class="examnav__step">
+          <button class="btn btn--ghost" id="q-prev" type="button" aria-label="Previous question">←</button>
+          <button class="btn btn--ghost" id="q-fwd" type="button" aria-label="Next question">→</button>
+        </div>
+        <button class="btn btn--go" id="q-submit" type="button">Submit exam</button>
+      </div>
+    </section>
+
+    <section class="panel navgrid" id="q-grid-wrap" hidden aria-label="Question navigator">
+      <div class="navgrid__legend"><span class="lg lg--done">Answered</span><span class="lg lg--flag">Flagged</span><span class="lg">Not answered</span></div>
+      <div class="navgrid__cells" id="q-grid"></div>
+    </section>
+  </main>
+
+  <!-- ============ RESULTS ============ -->
+  <main id="screen-results" class="screen" hidden>
+    <section class="panel report">
+      <p class="report__eyebrow" id="r-eyebrow"></p>
+      <div class="report__hero">
+        <div class="patch patch--big" id="r-patch" hidden><span id="r-patch-code"></span></div>
+        <div class="report__score"><span id="r-score">0%</span><small id="r-raw"></small></div>
+      </div>
+      <h2 class="report__title" id="r-title"></h2>
+      <p class="report__sub" id="r-sub"></p>
+
+      <div class="breakdown" id="r-breakdown" hidden></div>
+
+      <div class="results__actions">
+        <button class="btn btn--go" id="r-missed" type="button">Practice what I missed</button>
+        <button class="btn btn--ghost" id="r-retake" type="button">Retake</button>
+        <button class="btn btn--ghost" id="r-home" type="button">Back to garage</button>
+      </div>
+    </section>
+
+    <section class="panel review" aria-labelledby="r-review-title">
+      <div class="panel__head">
+        <h2 id="r-review-title">Review</h2>
+        <label class="toggle"><input type="checkbox" id="r-only-missed" checked> Missed only</label>
+      </div>
+      <ol class="review__list" id="r-list"></ol>
+    </section>
+  </main>
+
+  <dialog id="dlg" class="panel">
+    <form method="dialog">
+      <h2 id="dlg-title"></h2>
+      <p id="dlg-body"></p>
+      <div class="results__actions">
+        <button class="btn btn--ghost" value="cancel" id="dlg-cancel"></button>
+        <button class="btn btn--danger" value="ok" id="dlg-ok"></button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="paywall" class="panel paywall" aria-labelledby="pw-title">
+    <button class="icon-btn paywall__close" id="pw-close" type="button" aria-label="Close">✕</button>
+    <p class="paywall__eyebrow">Car Quiz Garage Pro</p>
+    <h2 id="pw-title">Unlock every question</h2>
+    <ul class="paywall__list">
+      <li><b>All 940 questions</b> across A1–A9 and G1, each with an explanation</li>
+      <li><b>Full-length exams</b> weighted like the real tests, with a score report by content area</li>
+      <li><b>Earn patches</b> and work toward Master Technician</li>
+      <li><b>Master mock</b> across A1–A8, plus weak-spot review on every question</li>
+    </ul>
+    <button class="btn btn--go paywall__buy" id="pw-buy" type="button">Unlock Pro</button>
+    <p class="paywall__note" id="pw-note"></p>
+    <p class="paywall__msg" id="pw-msg" role="status" aria-live="polite"></p>
+    <button class="link paywall__restore" id="pw-restore" type="button">Restore purchase</button>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="confetti" id="confetti" aria-hidden="true"></div>
+
+  <script>window.CARQUIZ_EDITION = 'demo';</script>
+  <script src="app.js"></script>
+  <script src="pro.js"></script>
+  <script src="ase-questions.js"></script>
+  <script src="ase-bank/A1.js"></script>
+  <script src="ase-bank/A2.js"></script>
+  <script src="ase-bank/A3.js"></script>
+  <script src="ase-bank/A4.js"></script>
+  <script src="ase-bank/A5.js"></script>
+  <script src="ase-bank/A6.js"></script>
+  <script src="ase-bank/A7.js"></script>
+  <script src="ase-bank/A8.js"></script>
+  <script src="ase-bank/A9.js"></script>
+  <script src="ase-bank/G1.js"></script>
+  <script src="ase.js"></script>
+</body>
+</html>

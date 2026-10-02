@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Car Quiz Grand Prix: answer car trivia fast enough to beat the pace car.">
+  <meta name="theme-color" content="#2b2f36">
+  <title>Car Quiz Grand Prix</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="fonts/fonts.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Reusable car silhouette (faces right) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="car" viewBox="0 0 64 28">
+      <path d="M4 20 L6 13 Q8 10 13 10 L22 10 L30 3 Q32 2 35 2 L46 2 Q49 2 51 5 L55 10 Q61 11 62 15 L62 20 Z" fill="currentColor"/>
+      <path d="M26 10 L32 5 Q33 4 35 4 L39 4 L39 10 Z M42 4 L46 4 Q48 4 49 6 L52 10 L42 10 Z" fill="#cfe8ff" opacity=".85"/>
+      <circle cx="16" cy="21" r="6" fill="#1b1d21"/><circle cx="16" cy="21" r="2.5" fill="#bbb"/>
+      <circle cx="50" cy="21" r="6" fill="#1b1d21"/><circle cx="50" cy="21" r="2.5" fill="#bbb"/>
+    </symbol>
+  </svg>
+
+  <div class="backdrop" aria-hidden="true"></div>
+
+  <!-- ============ TITLE ============ -->
+  <main id="screen-title" class="screen" data-active>
+    <header class="brand">
+      <p class="brand__eyebrow">Garage Trivia Series</p>
+      <h1 class="brand__title">Car Quiz <span>Grand Prix</span></h1>
+      <p class="brand__tag">Answer fast to stack nitro, and get past the pace car before the checkered flag.</p>
+    </header>
+
+    <form id="setup" class="panel setup" autocomplete="off">
+      <fieldset>
+        <legend>Track</legend>
+        <div class="chips" id="cat-options"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Class</legend>
+        <div class="segmented" id="diff-options"></div>
+        <p class="setup__hint" id="diff-hint" aria-live="polite"></p>
+      </fieldset>
+
+      <button type="submit" class="btn btn--go" id="start">
+        <span>Start engine</span> <kbd>Enter</kbd>
+      </button>
+    </form>
+
+    <a class="panel promo" href="ase.html">
+      <span class="promo__icon" aria-hidden="true">🔧</span>
+      <span class="promo__text">
+        <b>ASE Prep Garage</b>
+        <span>Studying for ASE certification? Practice A1–A8 with explanations and timed exams, and earn all eight patches.</span>
+      </span>
+      <span class="promo__go" aria-hidden="true">→</span>
+    </a>
+
+    <div class="title-grid">
+      <section class="panel" aria-labelledby="lb-title">
+        <div class="panel__head">
+          <h2 id="lb-title">Leaderboard</h2>
+          <button class="link" id="lb-clear" type="button">Clear</button>
+        </div>
+        <ol class="leaderboard" id="lb-title-list"></ol>
+      </section>
+
+      <section class="panel how" aria-labelledby="how-title">
+        <h2 id="how-title">How to race</h2>
+        <ul>
+          <li><b>Right answer:</b> 100 pts, plus up to 100 more for speed.</li>
+          <li><b>Nitro:</b> 3 right in a row multiplies your points by ×1.5. Five in a row makes it ×2.</li>
+          <li><b>Pace car:</b> it keeps moving while the clock runs. Have more points than its target when you cross the line.</li>
+          <li><b>Pit crew:</b> one 50/50 and one +7 second fuel stop for each race.</li>
+          <li><b>Keys:</b> <kbd>1</kbd>–<kbd>4</kbd> to answer, <kbd>F</kbd> for 50/50, <kbd>T</kbd> for more time, <kbd>Enter</kbd> for next, <kbd>M</kbd> to mute.</li>
+        </ul>
+      </section>
+    </div>
+    <p class="credits"><a href="privacy.html">Privacy</a> · <a href="privacy.html#credits">Credits</a></p>
+  </main>
+
+  <!-- ============ RACE ============ -->
+  <main id="screen-game" class="screen" hidden>
+    <div class="hud">
+      <div class="hud__stat"><span class="hud__label">Lap</span><span class="hud__value" id="hud-lap">1/10</span></div>
+      <div class="hud__stat"><span class="hud__label">Score</span><span class="hud__value" id="hud-score">0</span></div>
+      <div class="hud__stat hud__stat--streak" id="hud-streak-wrap"><span class="hud__label">Nitro</span><span class="hud__value" id="hud-streak">×1</span></div>
+      <div class="hud__actions">
+        <button class="icon-btn" id="mute" type="button" aria-pressed="false" aria-label="Mute sound" title="Sound (M)">🔊</button>
+        <button class="icon-btn" id="quit" type="button" aria-label="Quit race" title="Quit">✕</button>
+      </div>
+    </div>
+
+    <div class="track" role="img" aria-label="Race progress" id="track">
+      <div class="lane">
+        <span class="lane__name">You</span>
+        <div class="lane__road"><svg class="car car--you" id="car-you"><use href="#car"/></svg></div>
+      </div>
+      <div class="lane">
+        <span class="lane__name">Pace</span>
+        <div class="lane__road"><svg class="car car--pace" id="car-pace"><use href="#car"/></svg></div>
+      </div>
+      <div class="track__flag" aria-hidden="true"></div>
+      <p class="track__gap" id="track-gap"></p>
+    </div>
+
+    <section class="panel quiz" aria-live="polite">
+      <div class="quiz__meta">
+        <span class="tag" id="q-cat"></span>
+        <span class="timer" id="timer"><span id="timer-num">15</span>s</span>
+      </div>
+      <div class="timebar"><div class="timebar__fill" id="timebar"></div></div>
+      <h2 class="quiz__question" id="q-text"></h2>
+
+      <div class="answers" id="answers" role="group" aria-label="Answers"></div>
+
+      <div class="lifelines" id="lifelines">
+        <button class="btn btn--ghost" id="ll-5050" type="button"><span>50/50</span> <kbd>F</kbd></button>
+        <button class="btn btn--ghost" id="ll-time" type="button"><span>+7 sec fuel</span> <kbd>T</kbd></button>
+      </div>
+
+      <div class="feedback" id="feedback" hidden>
+        <p class="feedback__verdict" id="fb-verdict"></p>
+        <p class="feedback__points" id="fb-points"></p>
+        <p class="feedback__fact" id="fb-fact"></p>
+        <button class="btn btn--go" id="next" type="button"><span>Next lap</span> <kbd>Enter</kbd></button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ RESULTS ============ -->
+  <main id="screen-results" class="screen" hidden>
+    <section class="panel results">
+      <p class="results__eyebrow" id="res-eyebrow">Race complete</p>
+      <h2 class="results__title" id="res-title"></h2>
+      <p class="results__sub" id="res-sub"></p>
+
+      <div class="stats">
+        <div><span id="res-score">0</span><small>Score</small></div>
+        <div><span id="res-acc">0%</span><small>Accuracy</small></div>
+        <div><span id="res-streak">0</span><small>Best streak</small></div>
+        <div><span id="res-speed">0</span><small>Avg secs</small></div>
+      </div>
+
+      <form id="save-form" class="save">
+        <label for="player-name">Put your name on the board</label>
+        <div class="save__row">
+          <input id="player-name" name="name" maxlength="16" placeholder="Driver name" required autocomplete="nickname">
+          <button class="btn btn--go" type="submit">Save</button>
+        </div>
+      </form>
+      <p class="save__done" id="save-done" hidden></p>
+
+      <ol class="leaderboard" id="lb-results-list" hidden></ol>
+
+      <div class="results__actions">
+        <button class="btn btn--go" id="again" type="button">Race again</button>
+        <button class="btn btn--ghost" id="menu" type="button">Change setup</button>
+        <button class="btn btn--ghost" id="share" type="button">Share result</button>
+      </div>
+
+      <details class="review">
+        <summary>Review your answers</summary>
+        <ol id="review-list"></ol>
+      </details>
+    </section>
+  </main>
+
+  <dialog id="quit-dialog" class="panel">
+    <form method="dialog">
+      <h2>Leave the race?</h2>
+      <p>You'll lose your progress in this race.</p>
+      <div class="results__actions">
+        <button class="btn btn--ghost" value="stay">Keep racing</button>
+        <button class="btn btn--danger" value="quit">Quit</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="confetti" id="confetti" aria-hidden="true"></div>
+
+  <script>window.CARQUIZ_EDITION = 'demo';</script>
+  <script src="app.js"></script>
+  <script src="pro.js"></script>
+  <script src="questions.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>
